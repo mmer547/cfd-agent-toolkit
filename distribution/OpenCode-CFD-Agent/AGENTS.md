@@ -5,9 +5,10 @@ once into the calculation workspace root. CFD case directories live anywhere
 below that root and contain `constant`, `system`, and one of `0`, `0.orig`, or
 `0.org`. Do not copy the agent package into each case.
 
-The primary topology for this package is Windows-native OpenCode plus Ubuntu
-WSL for CFD execution. OpenCode runs in PowerShell/Windows, invokes the
-controller with Windows Python, and only the controller may cross into WSL.
+The primary topology for this package is a Windows-native agent host (Codex or
+OpenCode) plus Ubuntu WSL for CFD execution. The agent runs in
+PowerShell/Windows, invokes the controller with Windows Python, and only the
+controller may cross into WSL.
 
 ## Data boundary
 
@@ -45,7 +46,8 @@ controller with Windows Python, and only the controller may cross into WSL.
 - Load `stl-geometry-analyzer` before using STL dimensions or gaps to plan mesh settings.
 - Use `.agents/skills/cfd-case-agent/scripts/cfdctl.py`; do not compose or run OpenFOAM/iconCFD utilities directly.
 - Treat `.agents/skills/cfd-case-agent/registry/commands.json` as the command allowlist.
-- Use `python` because OpenCode runs on Windows. Do not start a second OpenCode process in WSL.
+- Use `python` because the agent host runs on Windows. Do not start a second
+  Codex or OpenCode process in WSL.
 - Do not invoke `wsl.exe` directly; the controller selects the configured distribution and performs path conversion.
 - Treat `Allrun` and `Allrun.*` as read-only setup references. Never execute or
   source them. When a required tutorial file is missing, use only a fixed
