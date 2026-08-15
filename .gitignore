@@ -1,0 +1,16 @@
+.cfd-status/
+.cfd-runs/
+__pycache__/
+*.pyc
+log.*
+processor*/
+postProcessing/
+constant/polyMesh/
+constant/extendedFeatureEdgeMesh/
+constant/triSurface/*.eMesh
+.pptx-build/
+CFDエージェント仕様説明/
+*.pptx.inspect.ndjson
+Allrun.solve.generated
+tmp/
+/sample/

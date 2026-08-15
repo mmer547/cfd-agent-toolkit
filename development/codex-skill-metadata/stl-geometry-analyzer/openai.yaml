@@ -1,0 +1,4 @@
+interface:
+  display_name: "STL Geometry Analyzer"
+  short_description: "Measure STL size, components, and clearances"
+  default_prompt: "Use $stl-geometry-analyzer to analyze the case STL geometry and report mesh-relevant dimensions."

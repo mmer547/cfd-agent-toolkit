@@ -1,0 +1,219 @@
+{
+  "version": 1,
+  "providers": {
+    "foundation-v10": {"distribution": "Ubuntu", "bashrc": "/opt/openfoam10/etc/bashrc"},
+    "foundation-v11": {"distribution": "Ubuntu", "bashrc": "/opt/openfoam11/etc/bashrc"},
+    "foundation-v12": {"distribution": "Ubuntu", "bashrc": "/opt/openfoam12/etc/bashrc"},
+    "foundation-v13": {"distribution": "Ubuntu", "bashrc": "/opt/openfoam13/etc/bashrc"},
+    "foundation-v14": {"distribution": "Ubuntu", "bashrc": "/opt/openfoam14/etc/bashrc"},
+    "openfoam-com-v2206": {"distribution": "Ubuntu", "bashrc": "/usr/lib/openfoam/openfoam2206/etc/bashrc"},
+    "openfoam-com-v2212": {"distribution": "Ubuntu", "bashrc": "/usr/lib/openfoam/openfoam2212/etc/bashrc"},
+    "openfoam-com-v2306": {"distribution": "Ubuntu", "bashrc": "/usr/lib/openfoam/openfoam2306/etc/bashrc"},
+    "openfoam-com-v2312": {"distribution": "Ubuntu", "bashrc": "/usr/lib/openfoam/openfoam2312/etc/bashrc"},
+    "openfoam-com-v2406": {"distribution": "Ubuntu", "bashrc": "/usr/lib/openfoam/openfoam2406/etc/bashrc"},
+    "openfoam-com-v2412": {"distribution": "Ubuntu", "bashrc": "/usr/lib/openfoam/openfoam2412/etc/bashrc"},
+    "openfoam-com-v2506": {"distribution": "Ubuntu", "bashrc": "/usr/lib/openfoam/openfoam2506/etc/bashrc"},
+    "openfoam-com-v2512": {"distribution": "Ubuntu", "bashrc": "/usr/lib/openfoam/openfoam2512/etc/bashrc"},
+    "openfoam-com-v2606": {"distribution": "Ubuntu", "bashrc": "/usr/lib/openfoam/openfoam2606/etc/bashrc"}
+  },
+  "profiles": {
+    "foundation-v10": {
+      "match": {"vendor": "foundation", "version": "10"},
+      "provider": "foundation-v10"
+    },
+    "foundation-v11": {
+      "match": {"vendor": "foundation", "version": "11"},
+      "provider": "foundation-v11"
+    },
+    "foundation-v12": {
+      "match": {"vendor": "foundation", "version": "12"},
+      "provider": "foundation-v12"
+    },
+    "foundation-v13": {
+      "match": {"vendor": "foundation", "version": "13"},
+      "provider": "foundation-v13"
+    },
+    "foundation-v14": {
+      "match": {"vendor": "foundation", "version": "14"},
+      "provider": "foundation-v14"
+    },
+    "openfoam-com-v2512": {
+      "match": {"vendor": "openfoam-com", "version": "v2512"},
+      "provider": "openfoam-com-v2512",
+      "decompose_option": "-decomposeParDict",
+      "workflow_set": "openfoam-com"
+    },
+    "openfoam-com-v2206": {
+      "match": {"vendor": "openfoam-com", "version": "v2206"},
+      "provider": "openfoam-com-v2206", "decompose_option": "-decomposeParDict", "workflow_set": "openfoam-com"
+    },
+    "openfoam-com-v2212": {
+      "match": {"vendor": "openfoam-com", "version": "v2212"},
+      "provider": "openfoam-com-v2212", "decompose_option": "-decomposeParDict", "workflow_set": "openfoam-com"
+    },
+    "openfoam-com-v2306": {
+      "match": {"vendor": "openfoam-com", "version": "v2306"},
+      "provider": "openfoam-com-v2306", "decompose_option": "-decomposeParDict", "workflow_set": "openfoam-com"
+    },
+    "openfoam-com-v2312": {
+      "match": {"vendor": "openfoam-com", "version": "v2312"},
+      "provider": "openfoam-com-v2312", "decompose_option": "-decomposeParDict", "workflow_set": "openfoam-com"
+    },
+    "openfoam-com-v2406": {
+      "match": {"vendor": "openfoam-com", "version": "v2406"},
+      "provider": "openfoam-com-v2406", "decompose_option": "-decomposeParDict", "workflow_set": "openfoam-com"
+    },
+    "openfoam-com-v2412": {
+      "match": {"vendor": "openfoam-com", "version": "v2412"},
+      "provider": "openfoam-com-v2412", "decompose_option": "-decomposeParDict", "workflow_set": "openfoam-com"
+    },
+    "openfoam-com-v2506": {
+      "match": {"vendor": "openfoam-com", "version": "v2506"},
+      "provider": "openfoam-com-v2506", "decompose_option": "-decomposeParDict", "workflow_set": "openfoam-com"
+    },
+    "openfoam-com-v2606": {
+      "match": {"vendor": "openfoam-com", "version": "v2606"},
+      "provider": "openfoam-com-v2606", "decompose_option": "-decomposeParDict", "workflow_set": "openfoam-com"
+    }
+  },
+  "workflow_sets": {
+    "openfoam-com": {
+      "mesh": ["openfoam.blockMesh", "openfoamcom.surfaceFeatureExtract", "openfoam.decomposePar.mesh", "openfoam.snappyHexMesh", "openfoam.reconstructPar.mesh", "internal.removeProcessors.mesh", "openfoam.checkMesh", "openfoam.checkMesh.basic"],
+      "solve": ["internal.prepareInitialConditions", "openfoam.setFields", "openfoam.decomposePar.solve", "openfoam.solver", "openfoam.reconstructPar.solve", "internal.removeProcessors"],
+      "rerun": ["internal.prepareRerun", "openfoam.setFields", "openfoam.decomposePar.solve", "openfoam.solver", "openfoam.reconstructPar.solve", "internal.removeProcessors"]
+    }
+  },
+  "case_rules": [
+    {
+      "id": "openfoamcom-snappy-toposet-alt-decompose",
+      "match": {
+        "vendor": "openfoam-com",
+        "files_all": ["Allrun", "system/snappyHexMeshDict", "system/topoSetDict", "system/decomposeParDict.6"]
+      },
+      "apply": {
+        "decompose_par_dict": "system/decomposeParDict.6",
+        "resource_copies": [
+          {
+            "source_env": "FOAM_TUTORIALS",
+            "source": "resources/geometry/motorBike.obj.gz",
+            "destination": "constant/triSurface/motorBike.obj.gz",
+            "reference": "Allrun",
+            "provider_tutorial_fallback": true
+          }
+        ],
+        "workflows": {
+          "mesh": ["internal.stageResources", "openfoamcom.surfaceFeatureExtract", "openfoam.blockMesh", "openfoam.decomposePar.mesh", "openfoam.snappyHexMesh", "openfoamcom.reconstructParMesh", "internal.removeProcessors.mesh", "openfoam.checkMesh", "openfoam.checkMesh.basic"],
+          "solve": ["internal.prepareInitialConditions", "openfoam.decomposePar.solve", "openfoam.topoSet", "openfoam.patchSummary", "openfoam.potentialFoam", "openfoam.solver", "openfoam.reconstructPar.solve", "internal.removeProcessors"],
+          "rerun": ["internal.prepareRerun", "openfoam.decomposePar.solve", "openfoam.topoSet", "openfoam.patchSummary", "openfoam.potentialFoam", "openfoam.solver", "openfoam.reconstructPar.solve", "internal.removeProcessors"]
+        }
+      }
+    },
+    {
+      "id": "openfoamcom-lagrangian-initial-state",
+      "match": {
+        "vendor": "openfoam-com",
+        "files_all": ["constant/kinematicCloudPositions"]
+      },
+      "apply": {
+        "workflows": {
+          "mesh": ["openfoam.blockMesh", "openfoam.checkMesh", "openfoam.checkMesh.basic"],
+          "solve": ["internal.prepareInitialConditions", "openfoam.decomposePar.solve", "openfoam.solver", "openfoam.reconstructPar.latestTime", "openfoam.reconstructPar.lagrangianCollisionFields", "internal.removeProcessors"],
+          "rerun": ["internal.prepareRerun", "openfoam.decomposePar.solve", "openfoam.solver", "openfoam.reconstructPar.latestTime", "openfoam.reconstructPar.lagrangianCollisionFields", "internal.removeProcessors"]
+        }
+      }
+    },
+    {
+      "id": "openfoamcom-mapfields-from-sibling-initial-state",
+      "match": {
+        "vendor": "openfoam-com",
+        "files_all": ["system/mapFieldsDict"]
+      },
+      "discover_sibling": {
+        "command_value": "map_fields_source",
+        "match": {"files_all": ["constant/kinematicCloudPositions"]}
+      },
+      "apply": {
+        "workflows": {
+          "mesh": ["openfoam.blockMesh", "openfoam.checkMesh", "openfoam.checkMesh.basic"],
+          "solve": ["internal.prepareInitialConditions", "openfoam.mapFields.latestTime", "openfoam.decomposePar.solve", "openfoam.solver", "openfoam.reconstructPar.solve", "internal.removeProcessors"],
+          "rerun": ["internal.prepareRerun", "openfoam.mapFields.latestTime", "openfoam.decomposePar.solve", "openfoam.solver", "openfoam.reconstructPar.solve", "internal.removeProcessors"]
+        }
+      }
+    }
+  ],
+  "case_overrides": {},
+  "workflows": {
+    "mesh": ["openfoam.blockMesh", "openfoam.surfaceFeatures", "openfoam.decomposePar.mesh", "openfoam.snappyHexMesh", "openfoam.reconstructPar.mesh", "internal.removeProcessors.mesh", "openfoam.checkMesh", "openfoam.checkMesh.basic"],
+    "solve": ["internal.prepareInitialConditions", "openfoam.setFields", "openfoam.decomposePar.solve", "openfoam.solver", "openfoam.reconstructPar.solve", "internal.removeProcessors"],
+    "rerun": ["internal.prepareRerun", "openfoam.setFields", "openfoam.decomposePar.solve", "openfoam.solver", "openfoam.reconstructPar.solve", "internal.removeProcessors"]
+  },
+  "mesh_optimization": {
+    "constraints": {"max_cells": 6000000, "check_mesh_failures": 0},
+    "limits": {"max_iterations": 12, "stop_after_no_improvement": 3},
+    "mutable_files": ["system/blockMeshDict", "system/snappyHexMeshDict"],
+    "protected_files": ["system/meshQualityDict"],
+    "tunable_entries": {
+      "system/snappyHexMeshDict": {
+        "castellatedMeshControls.nCellsBetweenLevels": {"min": 1, "max": 6},
+        "snapControls.nSmoothPatch": {"min": 1, "max": 10},
+        "snapControls.nSolveIter": {"min": 10, "max": 100},
+        "snapControls.nRelaxIter": {"min": 1, "max": 15},
+        "snapControls.nFeatureSnapIter": {"min": 1, "max": 30}
+      }
+    },
+    "candidate_sets": [
+      {
+        "id": "snap-smoothing-1",
+        "family": "snap-controls",
+        "when": {"metric": "faces_over_non_ortho_limit", "operator": "gt", "value": 0},
+        "changes": [
+          {"file": "system/snappyHexMeshDict", "entry": "snapControls.nSmoothPatch", "value": 5},
+          {"file": "system/snappyHexMeshDict", "entry": "snapControls.nSolveIter", "value": 50}
+        ]
+      },
+      {
+        "id": "snap-convergence-1",
+        "family": "snap-controls",
+        "when": {"metric": "low_quality_face_tets", "operator": "gt", "value": 0},
+        "changes": [
+          {"file": "system/snappyHexMeshDict", "entry": "snapControls.nRelaxIter", "value": 8},
+          {"file": "system/snappyHexMeshDict", "entry": "snapControls.nFeatureSnapIter", "value": 15}
+        ]
+      },
+      {
+        "id": "widen-transition-1",
+        "family": "transition",
+        "when": {"metric": "concave_cells", "operator": "gt", "value": 0},
+        "changes": [
+          {"file": "system/snappyHexMeshDict", "entry": "castellatedMeshControls.nCellsBetweenLevels", "value": 4}
+        ]
+      },
+      {
+        "id": "snap-smoothing-2",
+        "family": "snap-controls",
+        "when": {"metric": "faces_over_non_ortho_limit", "operator": "gt", "value": 0},
+        "changes": [
+          {"file": "system/snappyHexMeshDict", "entry": "snapControls.nSmoothPatch", "value": 7},
+          {"file": "system/snappyHexMeshDict", "entry": "snapControls.nSolveIter", "value": 70}
+        ]
+      },
+      {
+        "id": "snap-convergence-2",
+        "family": "snap-controls",
+        "when": {"metric": "low_quality_face_tets", "operator": "gt", "value": 0},
+        "changes": [
+          {"file": "system/snappyHexMeshDict", "entry": "snapControls.nRelaxIter", "value": 10},
+          {"file": "system/snappyHexMeshDict", "entry": "snapControls.nFeatureSnapIter", "value": 20}
+        ]
+      },
+      {
+        "id": "widen-transition-2",
+        "family": "transition",
+        "when": {"metric": "concave_cells", "operator": "gt", "value": 0},
+        "changes": [
+          {"file": "system/snappyHexMeshDict", "entry": "castellatedMeshControls.nCellsBetweenLevels", "value": 5}
+        ]
+      }
+    ]
+  }
+}

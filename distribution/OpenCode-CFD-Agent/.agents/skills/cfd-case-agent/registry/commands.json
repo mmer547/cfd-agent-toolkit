@@ -1,0 +1,32 @@
+{
+  "commands": {
+    "openfoam.blockMesh": {"provider": "{case_provider}", "executable": "blockMesh", "args": [], "phase": "mesh", "parallel": false, "requires": ["system/blockMeshDict"]},
+    "openfoam.surfaceFeatures": {"provider": "{case_provider}", "executable": "surfaceFeatures", "args": [], "phase": "mesh", "parallel": false, "requires": ["system/surfaceFeaturesDict"], "requires_dirs": ["constant/triSurface"]},
+    "openfoamcom.surfaceFeatureExtract": {"provider": "{case_provider}", "executable": "surfaceFeatureExtract", "args": [], "phase": "mesh", "parallel": false, "requires": ["system/surfaceFeatureExtractDict"], "requires_dirs": ["constant/triSurface"]},
+    "openfoam.decomposePar.mesh": {"provider": "{case_provider}", "executable": "decomposePar", "args": [], "phase": "mesh", "parallel": false, "requires": ["system/snappyHexMeshDict"], "when_parallel": true, "uses_decompose_dict": true},
+    "openfoam.snappyHexMesh": {"provider": "{case_provider}", "executable": "snappyHexMesh", "args": ["-overwrite"], "phase": "mesh", "parallel": true, "requires": ["system/snappyHexMeshDict"], "uses_decompose_dict": true},
+    "openfoam.reconstructPar.mesh": {"provider": "{case_provider}", "executable": "reconstructPar", "args": ["-constant"], "phase": "mesh", "parallel": false, "requires": ["system/snappyHexMeshDict"], "when_parallel": true},
+    "openfoam.checkMesh": {"provider": "{case_provider}", "executable": "checkMesh", "args": ["-allGeometry", "-allTopology", "-meshQuality"], "phase": "validate", "parallel": false, "requires": ["system/meshQualityDict"]},
+    "openfoam.checkMesh.basic": {"provider": "{case_provider}", "executable": "checkMesh", "args": ["-allGeometry", "-allTopology"], "phase": "validate", "parallel": false, "unless": ["system/meshQualityDict"]},
+    "openfoam.setFields": {"provider": "{case_provider}", "executable": "setFields", "args": [], "phase": "initialize", "parallel": false, "requires": ["system/setFieldsDict"]},
+    "openfoam.mapFields.latestTime": {"provider": "{case_provider}", "executable": "mapFields", "args": ["{map_fields_source}", "-sourceTime", "latestTime"], "phase": "initialize", "parallel": false},
+    "openfoam.topoSet": {"provider": "{case_provider}", "executable": "topoSet", "args": [], "phase": "initialize", "parallel": true, "requires": ["system/topoSetDict"], "uses_decompose_dict": true},
+    "openfoam.patchSummary": {"provider": "{case_provider}", "executable": "patchSummary", "args": [], "phase": "validate", "parallel": true, "uses_decompose_dict": true},
+    "openfoam.potentialFoam": {"provider": "{case_provider}", "executable": "potentialFoam", "args": ["-writephi"], "phase": "initialize", "parallel": true, "uses_decompose_dict": true},
+    "openfoam.decomposePar.solve": {"provider": "{case_provider}", "executable": "decomposePar", "args": [], "phase": "solve", "parallel": false, "when_parallel": true, "uses_decompose_dict": true},
+    "openfoam.solver": {"provider": "{case_provider}", "executable": "{application}", "args": [], "phase": "solve", "parallel": true, "requires": ["system/controlDict"], "uses_decompose_dict": true},
+    "openfoam.reconstructPar.solve": {"provider": "{case_provider}", "executable": "reconstructPar", "args": [], "phase": "solve", "parallel": false, "when_parallel": true},
+    "openfoam.reconstructPar.latestTime": {"provider": "{case_provider}", "executable": "reconstructPar", "args": ["-latestTime"], "phase": "solve", "parallel": false, "when_parallel": true},
+    "openfoam.reconstructPar.lagrangianCollisionFields": {"provider": "{case_provider}", "executable": "reconstructPar", "args": ["-lagrangianFields", "(collisionRecordsPairAccessed collisionRecordsPairData collisionRecordsPairOrigIdOfOther collisionRecordsPairOrigProcOfOther collisionRecordsWallAccessed collisionRecordsWallData collisionRecordsWallPRel)"], "phase": "solve", "parallel": false, "when_parallel": true},
+    "openfoamcom.reconstructParMesh": {"provider": "{case_provider}", "executable": "reconstructParMesh", "args": ["-constant"], "phase": "mesh", "parallel": false, "requires": ["system/snappyHexMeshDict"], "when_parallel": true},
+    "openfoam.foamCleanCase": {"provider": "{case_provider}", "executable": "foamCleanCase", "args": [], "phase": "maintenance", "parallel": false},
+    "iconcfd.decomposePar.solve": {"provider": "iconcfd", "executable": "decomposePar", "args": [], "phase": "solve", "parallel": false, "requires": ["system/decomposeParDict"], "when_parallel": true},
+    "iconcfd.solver": {"provider": "iconcfd", "executable": "{application}", "args": [], "phase": "solve", "parallel": true, "requires": ["system/controlDict"]},
+    "iconcfd.reconstructPar.solve": {"provider": "iconcfd", "executable": "reconstructPar", "args": [], "phase": "solve", "parallel": false, "requires": ["system/decomposeParDict"], "when_parallel": true},
+    "internal.prepareRerun": {"kind": "internal", "operation": "prepare-rerun", "phase": "maintenance"},
+    "internal.prepareInitialConditions": {"kind": "internal", "operation": "prepare-initial-conditions", "phase": "initialize"},
+    "internal.stageResources": {"kind": "internal", "operation": "stage-resources", "phase": "prepare"},
+    "internal.removeProcessors.mesh": {"kind": "internal", "operation": "remove-processors", "phase": "maintenance", "requires": ["system/snappyHexMeshDict"], "when_parallel": true},
+    "internal.removeProcessors": {"kind": "internal", "operation": "remove-processors", "phase": "maintenance", "when_parallel": true}
+  }
+}

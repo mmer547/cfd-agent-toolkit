@@ -1,0 +1,4 @@
+interface:
+  display_name: "CFD Case Agent"
+  short_description: "Inspect and iteratively optimize CFD case workflows"
+  default_prompt: "Use $cfd-case-agent to inspect this CFD case and safely plan or run iterative mesh optimization."

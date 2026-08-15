@@ -1,0 +1,46 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "*": "ask",
+    "read": "allow",
+    "edit": "allow",
+    "glob": "allow",
+    "grep": "allow",
+    "list": "allow",
+    "external_directory": "deny",
+    "webfetch": "deny",
+    "websearch": "deny",
+    "skill": {
+      "*": "ask",
+      "cfd-case-agent": "allow",
+      "stl-geometry-analyzer": "allow"
+    },
+    "bash": {
+      "*": "ask",
+      "python .agents/skills/cfd-case-agent/scripts/cfdctl.py --case . *": "allow",
+      "python .agents/skills/cfd-case-agent/scripts/cfdctl.py --workspace . *": "allow",
+      "python .agents/skills/stl-geometry-analyzer/scripts/analyze_stl.py *": "allow",
+      "python .agents/skills/cfd-case-agent/scripts/cfdctl.py --case . run-command * --execute*": "ask",
+      "python .agents/skills/cfd-case-agent/scripts/cfdctl.py --case . run-workflow * --execute*": "ask",
+      "python .agents/skills/cfd-case-agent/scripts/cfdctl.py --case . optimize-mesh --execute*": "ask",
+      "python .agents/skills/cfd-case-agent/scripts/cfdctl.py --case . optimize-mesh * --execute*": "ask",
+      "python .agents/skills/cfd-case-agent/scripts/cfdctl.py --case . recover-mesh-optimization *": "ask",
+      "python .agents/skills/cfd-case-agent/scripts/cfdctl.py --workspace . --case * run-command * --execute*": "ask",
+      "python .agents/skills/cfd-case-agent/scripts/cfdctl.py --workspace . --case * run-workflow * --execute*": "ask",
+      "python .agents/skills/cfd-case-agent/scripts/cfdctl.py --workspace . --case * optimize-mesh *--execute*": "ask",
+      "python .agents/skills/cfd-case-agent/scripts/cfdctl.py --workspace . --case * recover-mesh-optimization *": "ask",
+      "python .agents/skills/cfd-case-agent/scripts/cfdctl.py --workspace . batch-run * --execute*": "ask",
+      "./Allrun*": "deny",
+      "blockMesh*": "deny",
+      "surfaceFeatures*": "deny",
+      "decomposePar*": "deny",
+      "snappyHexMesh*": "deny",
+      "reconstructPar*": "deny",
+      "checkMesh*": "deny",
+      "foamRun*": "deny",
+      "mpirun*": "deny",
+      "wsl*": "deny",
+      "wsl.exe*": "deny"
+    }
+  }
+}

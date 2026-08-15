@@ -1,0 +1,19 @@
+Allrun text eol=lf
+Allrun.* text eol=lf
+Allclean text eol=lf
+scripts/* text eol=lf
+0/* text eol=lf
+system/* text eol=lf
+constant/MRFProperties text eol=lf
+constant/transportProperties text eol=lf
+constant/turbulenceProperties text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+*.sh text eol=lf
+*.py text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+*.cmd text eol=crlf
+*.stl -text
+*.pptx binary
