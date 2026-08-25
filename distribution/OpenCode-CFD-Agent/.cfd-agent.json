@@ -148,7 +148,7 @@
     "rerun": ["internal.prepareRerun", "openfoam.setFields", "openfoam.decomposePar.solve", "openfoam.solver", "openfoam.reconstructPar.solve", "internal.removeProcessors"]
   },
   "mesh_optimization": {
-    "constraints": {"max_cells": 6000000, "check_mesh_failures": 0},
+    "constraints": {"check_mesh_failures": 0},
     "limits": {"max_iterations": 12, "stop_after_no_improvement": 3},
     "mutable_files": ["system/blockMeshDict", "system/snappyHexMeshDict"],
     "protected_files": ["system/meshQualityDict"],

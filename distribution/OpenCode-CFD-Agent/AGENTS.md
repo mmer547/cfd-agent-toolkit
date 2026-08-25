@@ -60,7 +60,10 @@ controller may cross into WSL.
   from the current directory when multiple cases exist.
 - Dry-run is the default. Add `--execute` only when the user explicitly requests a real CFD run.
 - Read parallelism from `system/decomposeParDict`; never choose it from CPU count.
-- Keep the configured cell count at or below 6,000,000 unless the user explicitly changes `.cfd-agent.json`.
+- Before analyzing or optimizing mesh settings, require the user to provide a
+  positive maximum cell count. If it is missing, ask and stop before invoking
+  the controller. Pass the answer with `--max-cells`; do not store or infer a
+  default limit in `.cfd-agent.json`.
 - Never make `checkMesh` pass by silently weakening `system/meshQualityDict`.
 - Preserve and report optimization history under `.cfd-runs/mesh/`.
 - Before recalculation, plan the configured `rerun` workflow. Preserve `0` when
@@ -85,7 +88,7 @@ controller may cross into WSL.
 For a new session, run `discover-cases`, then run the controller's `inspect`,
 `list-commands`, and relevant `plan` command for each selected case before
 proposing execution. For mesh work, preview with
-`optimize-mesh` without `--execute` first. If STL files exist, generate and
+`optimize-mesh --max-cells <user-limit>` without `--execute` first. If STL files exist, generate and
 review `.cfd-runs/geometry/stl-analysis.json` before that preview.
 
 ## Scope of user-editable case inputs

@@ -212,16 +212,22 @@ class MeshOptimizer:
         parse_metrics: Callable[[Path], dict[str, Any]],
         workflow_plan: Callable[[], dict[str, Any]],
         workflow_runner: Callable[[Path], Path],
+        *,
+        max_cells: int | None = None,
     ):
         self.case = case.resolve()
-        self.settings = config["mesh_optimization"]
+        raw_settings = config["mesh_optimization"]
+        self.settings = dict(raw_settings)
+        self.settings["constraints"] = dict(raw_settings.get("constraints", {}))
+        if max_cells is not None:
+            self.settings["constraints"]["max_cells"] = max_cells
         self.parse_metrics = parse_metrics
         self.workflow_plan = workflow_plan
         self.workflow_runner = workflow_runner
         self.root = self.case / ".cfd-runs" / "mesh"
         constraints = self.settings["constraints"]
         limits = self.settings["limits"]
-        if int(constraints["max_cells"]) < 1:
+        if "max_cells" in constraints and int(constraints["max_cells"]) < 1:
             raise OptimizationError("mesh max_cells must be positive")
         if int(constraints.get("check_mesh_failures", 0)) < 0:
             raise OptimizationError("check_mesh_failures cannot be negative")

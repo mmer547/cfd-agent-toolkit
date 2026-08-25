@@ -1,6 +1,9 @@
 # Mesh optimization policy
 
-Treat cell-count and quality requirements as hard constraints. A candidate is accepted only when all constraints pass. Never relax `meshQualityDict` automatically.
+Treat the user's maximum cell count and the configured quality requirements as
+hard constraints. A candidate is accepted only when all constraints pass.
+Obtain the maximum cell count from the user before preview or execution; do not
+read, infer, or persist a default limit. Never relax `meshQualityDict` automatically.
 
 For `system/snappyHexMeshDict`, read `snappyhexmesh-dict.md` before choosing a
 parameter family. Use its staged castellated/snap/layer diagnosis and geometry
@@ -23,4 +26,6 @@ Apply every candidate independently from the recorded baseline. If a candidate p
 
 Rank non-passing candidates lexicographically by hard acceptance, excess cells, failed checks, face-tet errors, non-orthogonality errors, face-twist errors, concave cells, maximum non-orthogonality, and cell count. Store the best iteration in `state.json`; do not silently apply it without regenerating and validating its mesh.
 
-Resume a failed or interrupted run from its `state.json`. Restore the verified baseline before retrying the active candidate. Use `recover-mesh-optimization` to restore baseline dictionaries without starting CFD commands.
+Resume a failed or interrupted run from its `state.json`. Require the original
+user-supplied maximum cell count and reject a different value rather than
+silently changing the acceptance target. Restore the verified baseline before retrying the active candidate. Use `recover-mesh-optimization` to restore baseline dictionaries without starting CFD commands.

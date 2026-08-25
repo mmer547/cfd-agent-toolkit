@@ -45,7 +45,7 @@ class OpenCodePermissionTests(unittest.TestCase):
         self.assertEqual(self.decision(prefix + "run-workflow mesh --execute"), "ask")
         self.assertEqual(self.decision(prefix + "run-workflow rerun --execute"), "ask")
         self.assertEqual(self.decision(prefix + "optimize-mesh --execute"), "ask")
-        self.assertEqual(self.decision(prefix + "optimize-mesh --max-cells 6000000 --execute"), "ask")
+        self.assertEqual(self.decision(prefix + "optimize-mesh --max-cells 2500 --execute"), "ask")
         self.assertEqual(self.decision(prefix + "recover-mesh-optimization run-1"), "ask")
         shared = "python .agents/skills/cfd-case-agent/scripts/cfdctl.py --workspace . "
         self.assertEqual(

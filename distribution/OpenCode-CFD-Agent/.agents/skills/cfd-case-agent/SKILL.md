@@ -52,7 +52,7 @@ Set the workspace and case paths explicitly and invoke:
 python <skill-dir>/scripts/cfdctl.py --workspace <workspace> --case <case-dir> inspect
 python <skill-dir>/scripts/cfdctl.py --workspace <workspace> --case <case-dir> list-commands
 python <skill-dir>/scripts/cfdctl.py --workspace <workspace> --case <case-dir> plan mesh
-python <skill-dir>/scripts/cfdctl.py --workspace <workspace> --case <case-dir> analyze-mesh --max-cells 6000000
+python <skill-dir>/scripts/cfdctl.py --workspace <workspace> --case <case-dir> analyze-mesh --max-cells <user-limit>
 ```
 
 When the agent itself is running inside Linux/WSL, use `python3` instead of
@@ -83,7 +83,12 @@ Stop the batch on a failed job. Preflight all cases first and execute none when
 any case is blocked or invalid. Never accept duplicate cases or a case outside
 the workspace.
 
-Use `optimize-mesh` without `--execute` to preview the applicable candidates and complete mesh workflow without changing the case. Read `references/mesh-optimization.md` before editing mesh dictionaries or evaluating an optimization result.
+Before `analyze-mesh`, `plan-mesh-optimization`, or `optimize-mesh`, obtain a
+positive maximum cell count from the user. If the current conversation does
+not contain one, ask the user and do not invoke the controller yet. Never infer
+or persist a default. Pass the answer as `--max-cells <user-limit>`.
+
+Use `optimize-mesh --max-cells <user-limit>` without `--execute` to preview the applicable candidates and complete mesh workflow without changing the case. Read `references/mesh-optimization.md` before editing mesh dictionaries or evaluating an optimization result.
 
 The controller resolves configured workflows against case files. A block-only
 case runs `blockMesh` and the applicable `checkMesh`; a snappy case adds only the
@@ -135,16 +140,18 @@ clearance as an STL-based estimate and report unit or feasibility conflicts.
 Require explicit permission to start the iterative CFD run, then invoke:
 
 ```powershell
-python <skill-dir>/scripts/cfdctl.py --workspace <workspace> --case <case-dir> optimize-mesh --execute
+python <skill-dir>/scripts/cfdctl.py --workspace <workspace> --case <case-dir> optimize-mesh --max-cells <user-limit> --execute
 ```
 
-Use the configured candidate sets, bounds, maximum iterations, no-improvement limit, maximum cell count, and allowed check failures. Keep each candidate independent by restoring the baseline dictionaries before applying it. Leave an accepted candidate applied; restore the baseline when candidates are exhausted, execution fails, or the run is interrupted.
+Use the configured candidate sets, bounds, maximum iterations, no-improvement
+limit, allowed check failures, and the maximum cell count supplied by the user
+for this run. Keep each candidate independent by restoring the baseline dictionaries before applying it. Leave an accepted candidate applied; restore the baseline when candidates are exhausted, execution fails, or the run is interrupted.
 
 Inspect or resume a run with:
 
 ```powershell
 python <skill-dir>/scripts/cfdctl.py --workspace <workspace> --case <case-dir> mesh-optimization-status --run-id <run-id>
-python <skill-dir>/scripts/cfdctl.py --workspace <workspace> --case <case-dir> optimize-mesh --resume <run-id> --execute
+python <skill-dir>/scripts/cfdctl.py --workspace <workspace> --case <case-dir> optimize-mesh --resume <run-id> --max-cells <original-user-limit> --execute
 ```
 
 Use `recover-mesh-optimization <run-id>` only when the user requests recovery of the original dictionaries. Report the accepted iteration, best iteration, stop reason, and `.cfd-runs/mesh/<run-id>` path.

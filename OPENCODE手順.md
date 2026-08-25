@@ -106,7 +106,9 @@ snappy工程を省略し、`decomposeParDict`がないか`numberOfSubdomains 1`�
 
 各commandは最初にplanを表示し、問題がなければ承認後にcontrollerだけを通して実行します。
 `blockMesh`、`mpirun`、`wsl.exe`などをOpenCodeが直接呼ぼうとした場合は拒否してください。
-snappyHexMesh設定の反復最適化は`/cfd-mesh-optimize cases/case-a`を使用します。
+snappyHexMesh設定の反復最適化は`/cfd-mesh-optimize cases/case-a`を使用します。上限セル数が
+まだ指定されていない場合はOpenCodeが質問し、回答後にその値を`--max-cells`として渡します。
+配布設定には既定の上限値を持たせていません。
 
 再計算では既存メッシュを保持します。`0.orig`または`0.org`ディレクトリがあれば`0`を復元します。
 `0/alpha.water.orig`のようなフィールドテンプレートは保持し、生成済みの`0/alpha.water`だけを除去して

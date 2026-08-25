@@ -898,13 +898,14 @@ class Controller:
             raise CfdError("mesh workflow did not produce a validation log")
         return check_log or log_dir
 
-    def mesh_optimizer(self) -> MeshOptimizer:
+    def mesh_optimizer(self, max_cells: int | None = None) -> MeshOptimizer:
         return MeshOptimizer(
             self.case,
             self.config,
             mesh_metrics,
             lambda: self.plan("mesh"),
             lambda log_dir: self.execute_workflow("mesh", log_dir),
+            max_cells=max_cells,
         )
 
     def export_allrun(self, workflow: str, output: Path, force: bool) -> Path:
@@ -1100,6 +1101,26 @@ def execute_batch(
     }
 
 
+def positive_cell_limit(value: str) -> int:
+    try:
+        limit = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("maximum cell count must be an integer") from exc
+    if limit < 1:
+        raise argparse.ArgumentTypeError("maximum cell count must be positive")
+    return limit
+
+
+def validate_resume_cell_limit(state: dict[str, Any], requested: int) -> None:
+    original = state.get("source_metrics", {}).get("max_cells")
+    if original is None:
+        raise CfdError("mesh optimization state does not record a maximum cell count")
+    if int(original) != requested:
+        raise CfdError(
+            f"resume maximum cell count must remain {original}; got {requested}"
+        )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--case", type=Path, default=Path.cwd(), help="CFD case root")
@@ -1118,13 +1139,13 @@ def build_parser() -> argparse.ArgumentParser:
     run_workflow.add_argument("--execute", action="store_true")
     analyze = sub.add_parser("analyze-mesh")
     analyze.add_argument("--log", type=Path)
-    analyze.add_argument("--max-cells", type=int)
+    analyze.add_argument("--max-cells", type=positive_cell_limit, required=True)
     optimize = sub.add_parser("plan-mesh-optimization")
     optimize.add_argument("--log", type=Path)
-    optimize.add_argument("--max-cells", type=int)
+    optimize.add_argument("--max-cells", type=positive_cell_limit, required=True)
     run_optimize = sub.add_parser("optimize-mesh")
     run_optimize.add_argument("--log", type=Path, help="existing checkMesh log used as the baseline")
-    run_optimize.add_argument("--max-cells", type=int)
+    run_optimize.add_argument("--max-cells", type=positive_cell_limit, required=True)
     run_optimize.add_argument("--run-id", help="explicit run id for a new run")
     run_optimize.add_argument("--resume", help="resume an existing run id")
     run_optimize.add_argument("--execute", action="store_true", help="start WSL/CFD processes and modify candidate dictionaries")
@@ -1203,8 +1224,7 @@ def main(argv: list[str] | None = None) -> int:
     elif args.action in {"analyze-mesh", "plan-mesh-optimization"}:
         log = (args.log or case / "log.checkMesh.quality").resolve()
         metrics = mesh_metrics(log)
-        configured_max = controller.config["mesh_optimization"]["constraints"]["max_cells"]
-        max_cells = args.max_cells or configured_max
+        max_cells = args.max_cells
         metrics["max_cells"] = max_cells
         metrics["cell_limit_pass"] = metrics["cells"] is not None and metrics["cells"] <= max_cells
         metrics["accepted"] = metrics["cell_limit_pass"] and metrics["failed_checks"] == 0 and metrics["mesh_ok"]
@@ -1227,13 +1247,10 @@ def main(argv: list[str] | None = None) -> int:
             path.write_text(dump_json(plan) + "\n", encoding="utf-8")
             print(dump_json({"plan": str(path), "accepted": metrics["accepted"], "recommendations": plan["recommendations"]}))
     elif args.action == "optimize-mesh":
-        optimizer = controller.mesh_optimizer()
-        if args.max_cells is not None:
-            if args.max_cells < 1:
-                raise CfdError("--max-cells must be a positive integer")
-            optimizer.settings["constraints"]["max_cells"] = args.max_cells
+        optimizer = controller.mesh_optimizer(args.max_cells)
         if args.resume:
             run_dir, state = optimizer.status(args.resume)
+            validate_resume_cell_limit(state, args.max_cells)
             if not args.execute:
                 print(dump_json({"mode": "dry-run", "run": str(run_dir), "state": state, "next_action": "add --execute to resume"}))
             else:

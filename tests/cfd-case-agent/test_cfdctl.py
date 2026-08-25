@@ -10,6 +10,7 @@ from unittest.mock import Mock, patch
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = PROJECT_ROOT / "distribution" / "OpenCode-CFD-Agent" / ".agents" / "skills" / "cfd-case-agent" / "scripts" / "cfdctl.py"
+PACKAGE_CONFIG = PROJECT_ROOT / "distribution" / "OpenCode-CFD-Agent" / ".cfd-agent.json"
 SPEC = importlib.util.spec_from_file_location("cfdctl", SCRIPT)
 cfdctl = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader
@@ -52,7 +53,7 @@ class CfdCtlTests(unittest.TestCase):
                 "rerun": ["internal.prepareRerun", "openfoam.decomposePar.solve", "openfoam.solver", "openfoam.reconstructPar.solve", "internal.removeProcessors"],
             },
             "mesh_optimization": {
-                "constraints": {"max_cells": 6000000, "check_mesh_failures": 0},
+                "constraints": {"check_mesh_failures": 0},
                 "limits": {"max_iterations": 3, "stop_after_no_improvement": 2},
                 "mutable_files": ["system/snappyHexMeshDict"],
                 "protected_files": ["system/meshQualityDict"],
@@ -80,7 +81,7 @@ addLayersControls
         (case / "system" / "snappyHexMeshDict").write_text(dictionary, encoding="utf-8")
         config = {
             "mesh_optimization": {
-                "constraints": {"max_cells": 6000000, "check_mesh_failures": 0},
+                "constraints": {"check_mesh_failures": 0},
                 "limits": {"max_iterations": 6, "stop_after_no_improvement": 3},
                 "mutable_files": ["system/snappyHexMeshDict"],
                 "protected_files": ["system/meshQualityDict"],
@@ -151,12 +152,34 @@ addLayersControls
             metrics = cfdctl.mesh_metrics(log)
             self.assertEqual(metrics["failed_checks"], 0)
 
+    def test_mesh_optimization_requires_user_cell_limit(self):
+        parser = cfdctl.build_parser()
+        for action in ("analyze-mesh", "plan-mesh-optimization", "optimize-mesh"):
+            with self.subTest(action=action):
+                with self.assertRaises(SystemExit):
+                    parser.parse_args([action])
+                with self.assertRaises(SystemExit):
+                    parser.parse_args([action, "--max-cells", "0"])
+                args = parser.parse_args([action, "--max-cells", "2500"])
+                self.assertEqual(args.max_cells, 2500)
+        shared_config = json.loads(PACKAGE_CONFIG.read_text(encoding="utf-8"))
+        self.assertNotIn("max_cells", shared_config["mesh_optimization"]["constraints"])
+
+    def test_resume_preserves_original_user_cell_limit(self):
+        state = {"source_metrics": {"max_cells": 2500}}
+        cfdctl.validate_resume_cell_limit(state, 2500)
+        with self.assertRaisesRegex(cfdctl.CfdError, "must remain 2500"):
+            cfdctl.validate_resume_cell_limit(state, 3000)
+        with self.assertRaisesRegex(cfdctl.CfdError, "does not record"):
+            cfdctl.validate_resume_cell_limit({"source_metrics": {}}, 2500)
+
+
     def test_optimizer_stops_when_baseline_already_passes(self):
         with tempfile.TemporaryDirectory() as directory:
             case, config = self.make_optimizer_case(directory)
             baseline_log = self.write_mesh_log(case / "baseline.log", mesh_ok=True)
             called = []
-            optimizer = mesh_optimizer.MeshOptimizer(case, config, cfdctl.mesh_metrics, lambda: {}, lambda _: called.append(True))
+            optimizer = mesh_optimizer.MeshOptimizer(case, config, cfdctl.mesh_metrics, lambda: {}, lambda _: called.append(True), max_cells=2500)
             run_dir, _ = optimizer.create(baseline_log, "passing-baseline")
             state = optimizer.run(run_dir)
             self.assertEqual(state["status"], "accepted-baseline")
@@ -677,7 +700,7 @@ addLayersControls
     def test_quality_failures_produce_bounded_candidates(self):
         recommendations = cfdctl.optimization_recommendations(
             {"faces_over_non_ortho_limit": 10, "faces_below_twist_limit": 4, "low_quality_face_tets": 142, "concave_cells": 94682, "cells": 2235181},
-            6000000,
+            3_000_000,
         )
         candidate_names = {item["candidate"] for item in recommendations}
         self.assertIn("increase-snap-smoothing", candidate_names)
@@ -725,7 +748,7 @@ addLayersControls
                     return self.write_mesh_log(log_dir / "check.log", failures=0, mesh_ok=True)
                 raise AssertionError("unexpected candidate dictionary")
 
-            optimizer = mesh_optimizer.MeshOptimizer(case, config, cfdctl.mesh_metrics, lambda: {"workflow": "mesh"}, runner)
+            optimizer = mesh_optimizer.MeshOptimizer(case, config, cfdctl.mesh_metrics, lambda: {"workflow": "mesh"}, runner, max_cells=2500)
             run_dir, _ = optimizer.create(baseline_log, "test-run")
             state = optimizer.run(run_dir)
             final_text = (case / "system" / "snappyHexMeshDict").read_text(encoding="utf-8")
@@ -745,7 +768,7 @@ addLayersControls
             def failing_runner(_):
                 raise RuntimeError("simulated solver failure")
 
-            optimizer = mesh_optimizer.MeshOptimizer(case, config, cfdctl.mesh_metrics, lambda: {}, failing_runner)
+            optimizer = mesh_optimizer.MeshOptimizer(case, config, cfdctl.mesh_metrics, lambda: {}, failing_runner, max_cells=2500)
             run_dir, _ = optimizer.create(baseline_log, "resume-run")
             with self.assertRaises(RuntimeError):
                 optimizer.run(run_dir)
@@ -762,7 +785,7 @@ addLayersControls
         with tempfile.TemporaryDirectory() as directory:
             case, config = self.make_optimizer_case(directory)
             config["mesh_optimization"]["candidate_sets"][0]["changes"][0]["file"] = "system/meshQualityDict"
-            optimizer = mesh_optimizer.MeshOptimizer(case, config, cfdctl.mesh_metrics, lambda: {}, lambda _: Path())
+            optimizer = mesh_optimizer.MeshOptimizer(case, config, cfdctl.mesh_metrics, lambda: {}, lambda _: Path(), max_cells=2500)
             with self.assertRaises(mesh_optimizer.OptimizationError):
                 optimizer.candidates({"failed_checks": 1})
 

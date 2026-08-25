@@ -58,17 +58,19 @@ Codexを再起動してください。明示的に使う場合はプロンプト
 ```text
 $cfd-case-agent を使い、cases以下のケースを検出して構成を確認してください。
 cases/case-aのメッシュ作成計画をdry-runしてください。
-cases/case-aのSTLを解析し、600万セル以下を目標にメッシュ設定候補を提示してください。
+cases/case-aのSTLを解析し、メッシュ設定候補を提示してください。
 ```
 
 最初に`discover-cases`、`inspect`、`list-commands`、対象workflowの`plan`を実行します。
+メッシュ調整の上限セル数が依頼に含まれていない場合、Codexは値を質問し、回答を得るまで
+調整用controllerを実行しません。配布設定には既定の上限値を持たせていません。
 dry-runではCFD processを起動しません。ケース名や配置の深さに依存せず、辞書構成と
 controlDictのvendor/versionからprofileとworkflowを選びます。
 
 ## 実行を依頼する
 
 ```text
-cases/case-aのメッシュを実行してください。セル数は600万以下にしてください。
+cases/case-aのメッシュ設定を調整して実行してください。
 cases/case-aの計算を実行してください。
 cases/case-aとcases/case-bを指定順に1 JOBずつ計算してください。
 ```

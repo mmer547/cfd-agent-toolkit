@@ -21,6 +21,7 @@ analysis alone cannot predict final cell count or quality.
 - Inspect the closest triangle regions and indices. Patch seams, duplicate
   facets, intersections, and dirty STL can yield misleading clearance.
 - Change only entries explicitly allowlisted in `.cfd-agent.json`.
-- Keep the 6,000,000-cell constraint and quality criteria independent from
-  geometry-derived resolution targets. Report conflicts instead of relaxing
-  quality.
+- Ask the user for the maximum cell count before using the geometry report to
+  plan mesh adjustments. Keep that user-supplied constraint and the quality
+  criteria independent from geometry-derived resolution targets. Report
+  conflicts instead of relaxing quality.
